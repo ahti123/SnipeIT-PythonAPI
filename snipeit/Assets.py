@@ -418,7 +418,7 @@ class Assets(object):
         return json.dumps(results.json(),indent=4, separators=(',', ':'))
 
         
-    def checkOutAsset(self, server, token, assetID, note=None, locationID=None):
+    def checkOutAsset(self, server, token, assetID, note=None, locationID=None, userID=None):
         """Check out an asset
         
         Arguments:
@@ -431,10 +431,14 @@ class Assets(object):
             locationID {string} -- Location id where the asset checked out (default: {None})
         """
         self.uri = ('/api/v1/hardware/{0}/checkout'.format(assetID))
-        payload  = {'note':note, 'location_id':locationID}
+        payload  = {'note':note}
+        if locationID:
+            payload.update({'checkout_to_type': 'location', 'assigned_location': locationID})
+        elif userID:
+            payload.update({'checkout_to_type': 'user', 'assigned_user': userID})
         self.server = server + self.uri
         headers = {'Content-Type': 'application/json','Authorization': 'Bearer {0}'.format(token)}
-        results = requests.post(self.server, headers=headers, data=payload)
+        results = requests.post(self.server, headers=headers, json=payload)
         return json.dumps(results.json(),indent=4, separators=(',', ':'))
 
     def auditAsset(self, server, token, assetTag=None, locationID=None):
